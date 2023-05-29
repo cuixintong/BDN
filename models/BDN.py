@@ -18,13 +18,13 @@ class BDN(nn.Module):
         # x_dcp = DCP(x_dcp)
         # x_dcp = DCP(file_path)
         # x_dcp = torch.from_numpy(x_dcp)
-        out_J = self.Jx(x)
-        _,out_T = self.FFA(x)
+        out_J = self.Jx(x_dcp)
+        _,out_T = self.FFA(x,x_dcp)
 
         # 111
 
         if Val == False:
-            out_A, _ = self.MVSA(x, x)  # out_A 需要输出[1,3,1,1]
+            out_A, _ = self.MVSA(x, x_dcp)  # out_A 需要输出[1,3,1,1]
         # else:
         #     out_A = self.ANet(x2)
 
