@@ -66,12 +66,12 @@ class G2(nn.Module):
         self.lrelu = nn.LeakyReLU(0.2)
 
     def forward(self, x):
-        print(x)
+        # print(x)
 
         x = x.to(torch.float32)
         y1 = self.conv(x)
-        print(y1)
-        print("111--------------------------------")
+        # print(y1)
+        # print("111--------------------------------")
         y2 = self.layer1(y1)
         y3 = self.layer2(y2)
         y4 = self.layer3(y3)

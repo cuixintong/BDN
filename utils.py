@@ -89,18 +89,25 @@ def ssim(img1, img2, window_size=11, size_average=True):
     return _ssim(img1, img2, window, window_size, channel, size_average)
 
 
-def validation(net, net_name, val_data_loader, device, category, save_tag=False):
+def validation(net, net_name, val_data_loader, val_data_loader_dcp, device, category, save_tag=False):
 
     psnr_list = []
     ssim_list = []
 
-    for batch_id, val_data in enumerate(val_data_loader):
+    # for batch_id, val_data in enumerate(val_data_loader):
+    for batch_id, val_data in enumerate(zip(val_data_loader, val_data_loader_dcp)):
         if batch_id > 1:
             break
         with torch.no_grad():
-            haze, haze_A, gt, image_name = val_data
+
+            haze, gt, image_name = val_data[0]
+            haze_dcp, gt_dcp, _ = val_data[1]
+
+
             haze = haze.to(device)
             gt = gt.to(device)
+            haze_dcp = haze_dcp.to(device)
+
             B, _, H, W = haze.shape
             if net_name == 'MSBDNNet':
                 if haze.size()[2] % 16 != 0 or haze.size()[3] % 16 != 0:
@@ -111,7 +118,7 @@ def validation(net, net_name, val_data_loader, device, category, save_tag=False)
                                     gt.size()[3] + 16 - gt.size()[3] % 16], mode='bilinear')
                 dehaze = net(haze, 0, True)
             else:
-                dehaze = net(haze, True)
+                out_J, out_T, out_A, dehaze = net(haze, haze_dcp, True)
             #T = net(haze)
             #dc = get_dark_channel(haze, 15)
             #A = get_atmosphere(haze, dc, 0.001).repeat_interleave(H*W).view(B, 3, H, W)
@@ -147,7 +154,7 @@ def print_log(epoch, num_epochs, one_epoch_time, train_psnr, val_psnr, val_ssim,
           .format(one_epoch_time, epoch, num_epochs, train_psnr, val_psnr, val_ssim))
 
     # --- Write the training log --- #
-    with open('/output/{}_log.txt'.format(category), 'a') as f:
+    with open('output/{}_log.txt'.format(category), 'a') as f:
         print('Date: {0}s, Time_Cost: {1:.0f}s, Epoch: [{2}/{3}], Train_PSNR: {4:.2f}, Val_PSNR: {5:.2f}, Val_SSIM: {6:.4f}'
               .format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                       one_epoch_time, epoch, num_epochs, train_psnr, val_psnr, val_ssim), file=f)
@@ -217,13 +224,13 @@ def generate_test_images(net, TestData, num_epochs, chosen_epoch):
 
 def load_model(backbone, model_dir, device, device_ids):
     
-    if backbone == 'GCANet':
-        
-        net = GCANet()
-        net.to(device)
-        net = nn.DataParallel(net, device_ids=device_ids)
-        model_path = os.path.join(model_dir, 'GCA_pretrain.pth')
-        net.load_state_dict(torch.load(model_path))
+    # if backbone == 'GCANet':
+    #
+    #     net = GCANet()
+    #     net.to(device)
+    #     net = nn.DataParallel(net, device_ids=device_ids)
+    #     model_path = os.path.join(model_dir, 'GCA_pretrain.pth')
+    #     net.load_state_dict(torch.load(model_path))
         
         
     if backbone == 'FFANet':
@@ -237,13 +244,13 @@ def load_model(backbone, model_dir, device, device_ids):
         net.load_state_dict(torch.load(model_path))
         
         
-    if backbone == 'MSBDNNet':
-        
-        net = MSBDNNet()
-        net.to(device)
-        net = nn.DataParallel(net, device_ids=device_ids)
-        model_path = os.path.join(model_dir, 'MSBDNNet_pretrain.pth')
-        net.load_state_dict(torch.load(model_path))
+    # if backbone == 'MSBDNNet':
+    #
+    #     net = MSBDNNet()
+    #     net.to(device)
+    #     net = nn.DataParallel(net, device_ids=device_ids)
+    #     model_path = os.path.join(model_dir, 'MSBDNNet_pretrain.pth')
+    #     net.load_state_dict(torch.load(model_path))
         
         
     return net

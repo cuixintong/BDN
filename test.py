@@ -3,10 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torchvision.utils as vutils
-from datasets.pretrain_datasets import TrainData, ValData, TestData, TestData2, TestData_GCA, TestData_FFA
-from models.GCA import GCANet
+from datasets.pretrain_datasets import TrainData, ValData, TestData
+from models.BDN import BDN
 from models.FFA import FFANet
-from models.MSBDN import MSBDNNet
 from utils import to_psnr, print_log, validation, adjust_learning_rate
 import numpy as np
 import os
@@ -14,25 +13,28 @@ from PIL import Image
 
 epoch = 14
 
-test_data_dir = '/data/nnice1216/Dehazing/unlabeled/'
+test_data_dir = 'D:/app/pycharm/space/dehaze/FFA-Net'
     
 device_ids = [Id for Id in range(torch.cuda.device_count())]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# net = GCANet(in_c=4, out_c=3, only_residual=True).to(device)
-net = FFANet(3, 19)
-# net = MSBDNNet()
 
+crop_size = 256#输入图片的大小
+
+gps=3
+blocks=19
+net = BDN(gps=gps,blocks=blocks)
 net = nn.DataParallel(net, device_ids=device_ids)
 
-# net.load_state_dict(torch.load('PSD-GCANET'))
-net.load_state_dict(torch.load('PSD-FFANET'))
-# net.load_state_dict(torch.load('PSB-MSBDN'))
+
+net.load_state_dict(torch.load('output/haze_current1.pth'))
+
 
 net.eval()
 
-# test_data_loader = DataLoader(TestData_GCA(test_data_dir), batch_size=1, shuffle=False, num_workers=8) # For GCA
-test_data_loader = DataLoader(TestData_FFA(test_data_dir), batch_size=1, shuffle=False, num_workers=8) # For FFA and MSBDN
+
+val_data_loader_dcp = DataLoader(ValData(test_data_dir+'/RESIDE/ITS/ITS/ITS/val_dcp/',train=False,size=crop_size), batch_size=val_batch_size, shuffle=False, num_workers=0)
+
 
 
 output_dir = '/output/base_JEPG8/'

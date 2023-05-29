@@ -4,8 +4,8 @@ from DCP import *
 
 def main():
 
-    path = "D:\\app\pycharm\space\dehaze\FFA-Net\RESIDE\ITS\ITS\ITS\\train_dcp/"   #图像读取地址
-    savepath = "D:\\app\pycharm\space\dehaze\FFA-Net\RESIDE\ITS\ITS\ITS\\train_dcp\haze_dcp/"  # 图像保存地址
+    path = "D:\\app\pycharm\space\dehaze\FFA-Net\RESIDE\ITS\ITS\ITS\\val/"   #图像读取地址
+    savepath = "D:\\app\pycharm\space\dehaze\FFA-Net\RESIDE\ITS\ITS\ITS\\val_dcp\haze_dcp/"  # 图像保存地址
     filelist = os.listdir(path)  # 打开对应的文件夹
     total_num = len(filelist)  #得到文件夹中图像的个数
     print(111)

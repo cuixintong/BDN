@@ -94,7 +94,7 @@ class TrainData(data.Dataset):
         clear=Image.open(os.path.join(self.clear_dir,clear_name))
         #对clear进行中心裁剪
         clear=tfs.CenterCrop(haze.size[::-1])(clear)
-        print(type(self.size))
+        # print(type(self.size))
         # if isinstance(self.size,str):
         if not isinstance(self.size,str):
             i,j,h,w=tfs.RandomCrop.get_params(haze,output_size=(self.size,self.size))
@@ -153,7 +153,7 @@ class ValData(data.Dataset):
         clear = Image.open(os.path.join(self.clear_dir, clear_name))
         # 对clear进行中心裁剪
         clear = tfs.CenterCrop(haze.size[::-1])(clear)
-        print(type(self.size))
+        #print(type(self.size))
         # if isinstance(self.size,str):
         if not isinstance(self.size, str):
             i, j, h, w = tfs.RandomCrop.get_params(haze, output_size=(self.size, self.size))
@@ -161,7 +161,7 @@ class ValData(data.Dataset):
             clear = FF.crop(clear, i, j, h, w)
         # print(haze.shape,clear.shape)
         haze, clear = self.augData(haze.convert("RGB"), clear.convert("RGB"))
-        return haze, clear
+        return haze, clear, img
 
     def augData(self, data, target):
         if self.train:
@@ -182,7 +182,8 @@ class ValData(data.Dataset):
         return res
 
     def __len__(self):
-        return len(self.haze_names)
+        return len(self.haze_imgs)
+
 
 class TestData(data.Dataset):
     # def __init__(self, val_data_dir):
@@ -298,4 +299,4 @@ if __name__ == '__main__':
     cv2.imshow("haze",haze)
     cv2.imwrite("haze.png",haze)
 
-    print(haze)
+    # print(haze)
