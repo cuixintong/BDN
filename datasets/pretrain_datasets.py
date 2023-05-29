@@ -194,9 +194,10 @@ class TestData(data.Dataset):
     #     with open('/configs/record.txt', "r") as file:
     #         self.haze_names = file.readlines()
 
+
     def __init__(self, test_data_dir, train, size, format='.png'):
 
-        super(TrainData, self).__init__()
+        super(TestData, self).__init__()
         self.size = size
         print('crop size', size)
         self.train = train
@@ -211,6 +212,8 @@ class TestData(data.Dataset):
                           self.haze_imgs_dir]  # ['D:/app/pycharm/space/dehaze/FFA-Net/RESIDE/ITS/ITS/ITS/train/0001_01_0.9027.png', ...]
         # self.haze_imgs=[os.path.join(path,'haze',img) for img in self.haze_imgs_dir]
         # 得到清晰图像的文件夹
+        self.clear_dir = os.path.join(test_data_dir, 'clear')
+
 
     def __getitem__(self, index):
         # 得到一张图像
@@ -234,7 +237,7 @@ class TestData(data.Dataset):
             clear = FF.crop(clear, i, j, h, w)
         # print(haze.shape,clear.shape)
         haze, clear = self.augData(haze.convert("RGB"), clear.convert("RGB"))
-        return haze, clear
+        return haze, clear, img
 
     def augData(self, data, target):
         if self.train:

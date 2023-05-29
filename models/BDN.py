@@ -23,8 +23,8 @@ class BDN(nn.Module):
 
         # 111
 
-        if Val == False:
-            out_A, _ = self.MVSA(x, x_dcp)  # out_A 需要输出[1,3,1,1]
+        # if Val == False:
+        out_A, _ = self.MVSA(x, x_dcp)  # out_A 需要输出[1,3,1,1]
         # else:
         #     out_A = self.ANet(x2)
 

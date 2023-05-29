@@ -11,6 +11,8 @@ import numpy as np
 import os
 from PIL import Image
 
+test_batch_size = 1
+
 epoch = 14
 
 test_data_dir = 'D:/app/pycharm/space/dehaze/FFA-Net'
@@ -27,13 +29,16 @@ net = BDN(gps=gps,blocks=blocks)
 net = nn.DataParallel(net, device_ids=device_ids)
 
 
-net.load_state_dict(torch.load('output/haze_current1.pth'))
+net.module.load_state_dict(torch.load('output/haze_current19.pth'))
 
 
 net.eval()
 
 
-val_data_loader_dcp = DataLoader(ValData(test_data_dir+'/RESIDE/ITS/ITS/ITS/val_dcp/',train=False,size=crop_size), batch_size=val_batch_size, shuffle=False, num_workers=0)
+test_data_loader = DataLoader(TestData(test_data_dir+'/RESIDE/SOTS/SOTS/indoor/nyuhaze500/',train=False,size=crop_size), batch_size=test_batch_size, shuffle=False, num_workers=0)
+test_data_loader_dcp = DataLoader(TestData(test_data_dir+'/RESIDE/SOTS/SOTS/indoor/nyuhaze500_dcp/',train=False,size=crop_size), batch_size=test_batch_size, shuffle=False, num_workers=0)
+
+# ITS_test_loader=DataLoader(dataset=TrainData(path+'/RESIDE/ITS/ITS/ITS/val/',train=False,size='whole_img'),batch_size=1,shuffle=False)
 
 
 
@@ -42,18 +47,26 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     
 with torch.no_grad():
-    for batch_id, val_data in enumerate(test_data_loader):
+    # for batch_id, val_data in enumerate(test_data_loader):
+    for batch_id, test_data in enumerate(zip(test_data_loader,test_data_loader_dcp)):
         if batch_id > 150:
             break
         # haze, name = val_data # For GCA
-        haze, haze_A, name = val_data # For FFA and MSBDN
-        haze.to(device)
-        
+
+        haze, gt, img = test_data[0]
+        haze_dcp, gt_dcp, img_dcp = test_data[1]
+
+        haze = haze.to(device)
+        haze_dcp = haze_dcp.to(device)
+
         print(batch_id, 'BEGIN!')
 
         # pred = net(haze, 0, True, False) # For GCA
-        _, pred, T, A, I = net(haze, haze_A, True) # For FFA and MSBDN
-        
+
+        # return out, out_J, out_T, out_A, out_I
+        # _, pred, T, A, I = net(haze, haze_dcp, True) # For FFA and MSBDN
+        out_J, out_T, out_A, out_I = net(haze, haze_dcp, True) # For FFA and MSBDN
+
         ### GCA ###
         # dehaze = pred.float().round().clamp(0, 255)
         # out_img = Image.fromarray(dehaze[0].cpu().numpy().astype(np.uint8).transpose(1, 2, 0))
@@ -61,6 +74,7 @@ with torch.no_grad():
         ###########
         
         ### FFA & MSBDN ###
-        ts = torch.squeeze(pred.clamp(0, 1).cpu())
-        vutils.save_image(ts, output_dir + name[0].split('.')[0] + '_MyModel_{}.png'.format(batch_id))
+        ts = torch.squeeze(out_J.clamp(0, 1).cpu())
+        vutils.save_image(ts, 'output/111/' +'_MyModel_{}.png'.format(batch_id))
+        # vutils.save_image(ts, output_dir + img[0].split('.')[0] + '_MyModel_{}.png'.format(batch_id))
         ###################

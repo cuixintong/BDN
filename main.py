@@ -1,5 +1,7 @@
 import os
 import time
+
+import cv2
 import torch
 import argparse
 import torch.nn as nn
@@ -118,8 +120,15 @@ for epoch in range(num_epochs):
         # --- Forward + Backward + Optimize --- #
         net.train()
         J, T, A, I = net(haze,haze_dcp)
+
+        import torchvision.utils as vutils
+        if (batch_id % 10 == 0):
+            ts = torch.squeeze(J.clamp(0, 1).cpu())
+            vutils.save_image(ts, 'output/111/' +'_MyModel_{}.png'.format(str(batch_id)))
+
         #s, v = get_SV_from_HSV(J)
         #CAP_loss = F.smooth_l1_loss(s, v)
+
         Rec_Loss1 = F.smooth_l1_loss(J, gt)
         Rec_Loss2 = F.smooth_l1_loss(I, haze)
 
