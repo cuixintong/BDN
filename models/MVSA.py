@@ -175,10 +175,9 @@ class MVSA(nn.Module):
         self.FC = G2(3, 3)
         self.attention = MultiHeadAttention(256,256, 256, 1)
 
-    def forward(self, feature1, feature2, mask=None):
+    def forward(self, feature1, mask=None):
         Fd = self.FC(feature1)
-        Fh = self.FC(feature2)
-        A, scores = self.attention(Fd, Fh)
+        A, scores = self.attention(Fd, Fd)
 
         return A, scores
 

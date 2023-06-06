@@ -59,9 +59,7 @@ path = "D:/app/pycharm/space/dehaze/FFA-Net"
 
 #加载数据集
 train_data_loader = DataLoader(TrainData(path+'/RESIDE/ITS/ITS/ITS/train/',train=True,size=crop_size), batch_size=train_batch_size, shuffle=True, num_workers=0)
-train_data_loader_dcp = DataLoader(TrainData(path+'/RESIDE/ITS/ITS/ITS/train_dcp/',train=True,size=crop_size), batch_size=train_batch_size, shuffle=True, num_workers=0)
 val_data_loader = DataLoader(ValData(path+'/RESIDE/ITS/ITS/ITS/val/',train=False,size=crop_size), batch_size=val_batch_size, shuffle=False, num_workers=0)
-val_data_loader_dcp = DataLoader(ValData(path+'/RESIDE/ITS/ITS/ITS/val_dcp/',train=False,size=crop_size), batch_size=val_batch_size, shuffle=False, num_workers=0)
 
 
 print("DATALOADER DONE!")
@@ -79,7 +77,7 @@ for epoch in range(num_epochs):
     start_time = time.time()
     #adjust_learning_rate(optimizer, epoch, category=category)
 
-    for batch_id, train_data in enumerate(zip(train_data_loader,train_data_loader_dcp)):
+    for batch_id, train_data in enumerate(train_data_loader):
         # print(batch_id)
         # if batch_id > 5000:
         if batch_id > 5:
@@ -89,8 +87,7 @@ for epoch in range(num_epochs):
         lr=lr_schedule_cosdecay(step_num,all_T)
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        haze, gt = train_data[0]
-        haze_dcp, gt_dcp = train_data[1]
+        haze, gt = train_data
 
 
         # haze = nn.DataParallel(haze, device_ids=device_ids)
@@ -106,8 +103,6 @@ for epoch in range(num_epochs):
 
         haze = haze.to(device)
         gt = gt.to(device)
-        haze_dcp = haze_dcp.to(device)
-        gt_dcp = gt_dcp.to(device)
 
 
         #dc = get_dark_channel(haze, 15)
@@ -117,7 +112,7 @@ for epoch in range(num_epochs):
 
         # --- Forward + Backward + Optimize --- #
         net.train()
-        J, T, A, I = net(haze,haze_dcp)
+        J, T, A, I = net(haze)
         #s, v = get_SV_from_HSV(J)
         #CAP_loss = F.smooth_l1_loss(s, v)
         Rec_Loss1 = F.smooth_l1_loss(J, gt)
@@ -146,7 +141,7 @@ for epoch in range(num_epochs):
     net.eval()
 
     net_name = "BDNNET"
-    val_psnr, val_ssim = validation(net, net_name, val_data_loader, val_data_loader_dcp, device, category)
+    val_psnr, val_ssim = validation(net, net_name, val_data_loader, device, category)
     one_epoch_time = time.time() - start_time
     print_log(epoch+1, num_epochs, one_epoch_time, train_psnr, val_psnr, val_ssim, category)
 

@@ -97,9 +97,8 @@ class FFANet(nn.Module):
         self.pre = nn.Sequential(*pre_process)
         self.post = nn.Sequential(*post_precess)
 
-    def forward(self, x1, x3, x2=0, Val=False):
+    def forward(self, x1, Val=False):
 
-        x1 = torch.cat([x1, x3], 1)
         x1 = self.conv2(x1) # 这里需要x1是[batch,3,256,256]
         x = self.pre(x1)
         res1=self.g1(x)

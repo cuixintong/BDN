@@ -89,19 +89,18 @@ def ssim(img1, img2, window_size=11, size_average=True):
     return _ssim(img1, img2, window, window_size, channel, size_average)
 
 
-def validation(net, net_name, val_data_loader, val_data_loader_dcp, device, category, save_tag=False):
+def validation(net, net_name, val_data_loader, device, category, save_tag=False):
 
     psnr_list = []
     ssim_list = []
 
     # for batch_id, val_data in enumerate(val_data_loader):
-    for batch_id, val_data in enumerate(zip(val_data_loader, val_data_loader_dcp)):
+    for batch_id, val_data in enumerate(val_data_loader):
         if batch_id > 1:
             break
         with torch.no_grad():
 
-            haze, gt, image_name = val_data[0]
-            haze_dcp, gt_dcp, _ = val_data[1]
+            haze, gt, image_name = val_data
 
 
             haze = haze.to(device)
@@ -118,7 +117,7 @@ def validation(net, net_name, val_data_loader, val_data_loader_dcp, device, cate
                                     gt.size()[3] + 16 - gt.size()[3] % 16], mode='bilinear')
                 dehaze = net(haze, 0, True)
             else:
-                out_J, out_T, out_A, dehaze = net(haze, haze_dcp, True)
+                out_J, out_T, out_A, dehaze = net(haze, True)
             #T = net(haze)
             #dc = get_dark_channel(haze, 15)
             #A = get_atmosphere(haze, dc, 0.001).repeat_interleave(H*W).view(B, 3, H, W)
