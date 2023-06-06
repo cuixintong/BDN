@@ -42,7 +42,7 @@ test_data_loader_dcp = DataLoader(TestData(test_data_dir+'/RESIDE/SOTS/SOTS/indo
 
 
 
-output_dir = '/output/base_JEPG8/'
+output_dir = 'output/base_JEPG8/'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     
@@ -75,6 +75,6 @@ with torch.no_grad():
         
         ### FFA & MSBDN ###
         ts = torch.squeeze(out_J.clamp(0, 1).cpu())
-        vutils.save_image(ts, 'output/111/' +'_MyModel_{}.png'.format(batch_id))
+        vutils.save_image(ts, output_dir +'_MyModel_{}.png'.format(batch_id))
         # vutils.save_image(ts, output_dir + img[0].split('.')[0] + '_MyModel_{}.png'.format(batch_id))
         ###################
